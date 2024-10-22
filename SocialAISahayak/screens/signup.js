@@ -6,10 +6,25 @@ import {Ionicons} from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import Button from '../components/Button';
 import { Image } from 'react-native';
+import axios from 'axios';
 import Foect from 'foect';
 const Signup = ({navigation}) => {
+  const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$/;
+  const [name,setName]=useState('');
+  const [email,setEmail]=useState('');
+  const [password,setPassword]=useState('');
   const [isPasswordShown,setIsPasswordShown]=useState(false);
   const [isChecked,setIsChecked]=useState(false);
+  function handleSubmit(){
+    const userData={
+      name:name,
+      email:email,
+      password:password
+    }
+     axios.post("http://192.168.16.90:5001/register",userData).then(res=>console.log(res.data))
+    .catch(e=>console.log(e));
+      
+  }
   return (
     <SafeAreaView style={{flex:1,backgroundColor:Colors.white}}>
       <View style={{flex:1,marginHorizontal:22}}>
@@ -27,7 +42,7 @@ const Signup = ({navigation}) => {
           color:Colors.black
         }}>Have engagement like never before</Text>
         </View>
-        <Foect.Form>{form=><View>
+        <Foect.Form >{form=><View>
           <View style={{marginBottom:12}}>
           <Text style={{
             fontSize:16,
@@ -56,7 +71,8 @@ const Signup = ({navigation}) => {
             width: "100%",
           }}
           onBlur={control.markAsTouched}
-          onChangeText={(text) => control.onChange(text)}
+          onChangeText={(text) =>{ control.onChange(text),setName(text)
+          }}
           value={control.value}
         />
       </View>
@@ -109,7 +125,7 @@ const Signup = ({navigation}) => {
               width:"100%"
             }}
             onBlur={control.markAsTouched}
-          onChangeText={(text) => control.onChange(text)}
+          onChangeText={(text) => {control.onChange(text),setEmail(text)}}
           value={control.value}
           />
         </View>
@@ -133,7 +149,7 @@ const Signup = ({navigation}) => {
             marginVertical:8
           }}>Password</Text>
           
-            <Foect.Control name='password' required pattern={/"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$"/}>{control=>(<View style={{width:'100%',marginBottom:5}}>
+          <Foect.Control name="password" required pattern={passwordPattern}>{control=>(<View style={{width:'100%',marginBottom:5}}>
               <View style={{
             width:"100%",
             height:48,
@@ -153,7 +169,8 @@ const Signup = ({navigation}) => {
               width:"100%"
             }}
             onBlur={control.markAsTouched}
-            onChangeText={(text) => control.onChange(text)}
+            onChangeText={
+              (text) => {control.onChange(text),setPassword(text)}}
             value={control.value}
             />
             <TouchableOpacity 
@@ -203,7 +220,7 @@ const Signup = ({navigation}) => {
           marginTop:18,
           marginBottom:4,
         }}
-        onPress={()=>form.submit()}/>
+        onPress={()=>{form.submit(),handleSubmit(),navigation.navigate("login")}}/>
           </View>}</Foect.Form>
         
         <View style={{flexDirection:'row',alignItems:'center',marginVertical:20}}>
