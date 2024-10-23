@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, Pressable } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, Pressable, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
@@ -6,10 +6,31 @@ import {Ionicons} from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import Button from '../components/Button';
 import { Image } from 'react-native';
+import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
 
 const Signin = ({navigation}) => {
+  
+  const [email,setEmail]=useState('');
+  const [Password,setPassword]=useState('');
   const [isPasswordShown,setIsPasswordShown]=useState(false);
   const [isChecked,setIsChecked]=useState(false);
+  function handleSubmit(){
+    console.log(email,Password);
+    const userData={
+      email:email,
+      password:Password
+    }
+    axios.post("http://192.168.29.238:5001/login-user",userData).then(res=>{console.log(res.data);
+      if(res.data.status=="ok"){
+        Alert.alert('Logged In successfull');
+        navigation.navigate('ChatBot');
+      }else{
+        Alert.alert('Invalid User');
+      }
+    });
+
+  }
   return (
     <SafeAreaView style={{flex:1,backgroundColor:Colors.white}}>
       <View style={{flex:1,marginHorizontal:22}}>
@@ -51,7 +72,8 @@ const Signin = ({navigation}) => {
             keyboardType='email-address'
             style={{
               width:"100%"
-            }}/>
+            }}
+            onChange={e=>setEmail(e.nativeEvent.text)}/>
         </View>
       </View>
       <View style={{marginBottom:12}}>
@@ -77,7 +99,8 @@ const Signin = ({navigation}) => {
             secureTextEntry={isPasswordShown}
             style={{
               width:"100%"
-            }}/>
+            }}
+            onChange={e=>setPassword(e.nativeEvent.text)}/>
             <TouchableOpacity 
             onPress={()=>setIsPasswordShown(!isPasswordShown)}
             style={{
@@ -112,7 +135,10 @@ const Signin = ({navigation}) => {
         style={{
           marginTop:18,
           marginBottom:4,
-        }}/>
+        }}
+        //  onPress={()=>{navigation.navigate("ChatBot")}}
+        onPress={()=>{handleSubmit()}}
+        />
         <View style={{flexDirection:'row',alignItems:'center',marginVertical:20}}>
           <View style={{
             flex:1,
