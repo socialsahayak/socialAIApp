@@ -3,6 +3,8 @@ const app=express();
 const mongoose=require("mongoose");
 const mongoUrl="mongodb+srv://shivaram:ram%401730@cluster0.pafie.mongodb.net/?retryWrites=true&w=majority&appName=Cluster00";
 const bcrypt=require("bcryptjs")
+const jwt=require("jsonwebtoken");
+const JWT_secret="jkfjdfjikjijo[]kajfiojioj1234";
 mongoose.connect(mongoUrl).then(()=>{
     console.log("database connected");
 }).catch((e)=>{
@@ -37,3 +39,21 @@ app.post("/register",async(req,res)=>{
     }
     
 });
+app.post("/login-user",async(req,res)=>{
+        const {email,password}=req.body;
+        const oldUser=await user.findOne({email:email});
+        if(!oldUser){
+            return res.send({data:"user doesn't exist"});
+
+        }
+        if(await bcrypt.compare(password,oldUser.password)){
+            const token=jwt.sign({email:oldUser.email},JWT_secret);
+            if(res.status(201)){
+                return res.send({status:'ok',data:token});
+            }else{
+                return res.send({error:"error"});
+            }
+        }
+
+    
+})
