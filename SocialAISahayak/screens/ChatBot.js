@@ -124,7 +124,7 @@ export default function ChatBot() {
   };
 
   return (
-    <NavigationContainer>
+    // <NavigationContainer>
       <Drawer.Navigator
         drawerContent={(props) => (
           <CustomDrawerContent
@@ -156,7 +156,7 @@ export default function ChatBot() {
           {() => <ChatScreen toggleTheme={toggleTheme} isDarkTheme={isDarkTheme} addMessageToHistory={addMessageToHistory} currentChat={currentChat} />}
         </Drawer.Screen>
       </Drawer.Navigator>
-    </NavigationContainer>
+    // </NavigationContainer>
   );
 }
 
