@@ -21,7 +21,7 @@ const Signup = ({navigation}) => {
       email:email,
       password:password
     }
-     axios.post("http://192.168.16.90:5001/register",userData).then(res=>console.log(res.data))
+     axios.post("http://192.168.29.238:5001/register",userData).then(res=>console.log(res.data))
     .catch(e=>console.log(e));
       
   }

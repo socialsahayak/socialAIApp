@@ -7,6 +7,7 @@ import Welcome from './screens/welcome'; // Ensure this path is correct
 import Login from './screens/login'; // Check other imports too
 import Signup from './screens/signup';
 import Otpverifiy from './screens/otpverification';
+import  ChatBot  from './screens/ChatBot';
 export default function App() {
   return (
     <NavigationContainer>
@@ -34,6 +35,13 @@ export default function App() {
       <Stack.Screen
       name='otpverification'
       component={Otpverifiy}
+      options={{
+        headerShown:false
+      }}     
+      />
+       <Stack.Screen
+      name='ChatBot'
+      component={ChatBot}
       options={{
         headerShown:false
       }}     
