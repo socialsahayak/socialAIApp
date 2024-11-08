@@ -21,7 +21,7 @@ const Signin = ({navigation}) => {
       email:email,
       password:Password
     }
-    axios.post("http://192.168.29.238:5001/login-user",userData).then(res=>{console.log(res.data);
+    axios.post("http://192.168.34.90:5001/login-user",userData).then(res=>{console.log(res.data);
       if(res.data.status=="ok"){
         Alert.alert('Logged In successfull');
         navigation.navigate('ChatBot');
@@ -118,6 +118,20 @@ const Signin = ({navigation}) => {
             </TouchableOpacity>
         </View>
       </View>  
+      <View style={{
+        flexDirection:'row',
+        justifyContent:'flex-end'
+      }}>
+        <Pressable 
+          onPress={()=>navigation.navigate("forgotpassword")}>
+            <Text style={{
+              fontSize:15,
+              color:Colors.primary,
+              fontWeight:'bold',
+              marginLeft:6,
+            }}>Forgot your password?</Text>
+          </Pressable>
+      </View>
       <View style={{
         flexDirection:'row',
         marginVertical:6
