@@ -8,6 +8,7 @@ import Login from './screens/login'; // Check other imports too
 import Signup from './screens/signup';
 import Otpverifiy from './screens/otpverification';
 import  ChatBot  from './screens/ChatBot';
+import { ForgotPassword } from './screens';
 export default function App() {
   return (
     <NavigationContainer>
@@ -42,6 +43,13 @@ export default function App() {
        <Stack.Screen
       name='ChatBot'
       component={ChatBot}
+      options={{
+        headerShown:false
+      }}     
+      />
+      <Stack.Screen
+      name='forgotpassword'
+      component={ForgotPassword}
       options={{
         headerShown:false
       }}     
