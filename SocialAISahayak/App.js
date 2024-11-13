@@ -9,6 +9,7 @@ import Signup from './screens/signup';
 import Otpverifiy from './screens/otpverification';
 import  ChatBot  from './screens/ChatBot';
 import { ForgotPassword } from './screens';
+import OTP from './screens/otpforfp';
 export default function App() {
   return (
     <NavigationContainer>
@@ -53,6 +54,11 @@ export default function App() {
       options={{
         headerShown:false
       }}     
+      />
+      <Stack.Screen
+      name="otpforfp"
+      component={OTP}
+      options={{ headerShown: false }}
       />
       </Stack.Navigator>
     </NavigationContainer>

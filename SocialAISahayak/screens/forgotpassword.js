@@ -78,7 +78,7 @@ const ForgotPassword = ({navigation}) => {
           marginTop:18,
           marginBottom:4,
         }}
-        onPress={()=>{handleSubmit()}}
+        onPress={()=>{navigation.navigate("otpforfp")}}
         />
         
         <View style={{

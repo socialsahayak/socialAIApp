@@ -4,12 +4,14 @@ import Welcome from "./welcome";
 import Otpverify from "./otpverification";
 import ChatBot from "./ChatBot"; 
 import ForgotPassword from "./forgotpassword";
+import OTP from "./otpforfp";
 export{
     Login,
     Welcome,
     Signup,
     Otpverify,
     ChatBot,
-    ForgotPassword
+    ForgotPassword,
+    OTP
 
 }
