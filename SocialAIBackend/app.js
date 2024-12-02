@@ -1,9 +1,14 @@
 const express=require("express");
 const app=express();
 const mongoose=require("mongoose");
+const {sendMail}=require("./helpers/sendMail")
+const {v4:uuidv4 }=require("uuid");
+
+
 const mongoUrl="mongodb+srv://shivaram:ram%401730@cluster0.pafie.mongodb.net/?retryWrites=true&w=majority&appName=Cluster00";
 const bcrypt=require("bcryptjs")
 const jwt=require("jsonwebtoken");
+// const { sendMail, main } = require("./helpers/sendMail");
 const JWT_secret="jkfjdfjikjijo[]kajfiojioj1234";
 mongoose.connect(mongoUrl).then(()=>{
     console.log("database connected");
@@ -13,12 +18,18 @@ mongoose.connect(mongoUrl).then(()=>{
 require("./userDetails")
 const user=mongoose.model('userInfo');
 app.use(express.json());
+
+
 app.get("/",(req,res)=>{
         res.send({status:"Started"})
 })
+
+
 app.listen(5001,()=>{
     console.log("server is started");
 })
+
+
 app.post("/register",async(req,res)=>{
     const {name,email,password}=req.body;
     const oldUser=await user.findOne({email:email});
@@ -28,10 +39,12 @@ app.post("/register",async(req,res)=>{
     const encryptedPass=await bcrypt.hash(password,10);
     try{
         await user.create({
+            id:uuidv4(),
             name:name,
             email:email,
             password:encryptedPass
         });
+        sendMail(email,"Welcome to Our App",`Hi ,${name} Thank you for registering ! Now you can explore our app`)
         res.send({status:"ok",data:"user created"})
     }
     catch(error){
@@ -57,3 +70,5 @@ app.post("/login-user",async(req,res)=>{
 
     
 })
+
+
