@@ -8,13 +8,18 @@ import {
   Pressable,
   Alert,
 } from "react-native";
+import axios from 'axios';
 import { useNavigation } from "@react-navigation/native";
-const ChangePasswordModal = ({ modalVisible, setModalVisible }) => {
+const ChangePasswordModal = ({ modalVisible, setModalVisible,email }) => {
     const navigation=useNavigation();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
   const handlePasswordChange = () => {
+    if(!newPassword || !passwordPattern.test(newPassword)){
+      Alert.alert("Password must be at least 8 characters, including a letter, a number, and a special character.");
+      return;
+    }
     if (!newPassword || !confirmPassword) {
       Alert.alert("Error", "Please fill in both fields.");
       return;
@@ -24,13 +29,28 @@ const ChangePasswordModal = ({ modalVisible, setModalVisible }) => {
       Alert.alert("Error", "Passwords do not match.");
       return;
     }
-
-    Alert.alert("Success", "Password changed successfully.");
-    setModalVisible(false); 
-    // Close the modal
-    navigation.navigate('ChatBot');
-    setNewPassword("");
+    console.log(email);
+    const data={
+      email:email,
+      password:newPassword,
+    };
+    axios.put("http://192.168.219.90:5001/changePassword",data).then((res)=>{
+      console.log(res.data.message);
+      
+      Alert.alert("Success", "Password changed successfully.");
+      setModalVisible(false); 
+      navigation.navigate('ChatBot');
+      setNewPassword("");
     setConfirmPassword("");
+      }
+    ).catch((err)=>{
+      const status=err.response.status;
+      if(status===400){
+        Alert.alert('Failed to Change Password');
+      }else if (status===500) {
+        Alert.alert("Server Error","Internal server error please try again.");
+      }
+    })
   };
 
   return (

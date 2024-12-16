@@ -46,7 +46,7 @@ const Signup = ({ navigation }) => {
     const userData = { name, email, password };
 
     try {
-      const res = await axios.post("http://192.168.141.90:5001/register", userData);
+      const res = await axios.post("http://192.168.219.90:5001/register", userData);
       console.log(res.data);
       alert("Account created successfully!");
       navigation.navigate("login");

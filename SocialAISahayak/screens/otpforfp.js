@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StyleSheet,Text,View ,Pressable,Keyboard} from "react-native";
+import { StyleSheet,Text,View ,Pressable,Keyboard, Alert} from "react-native";
 import Colors from "../constants/colors";
 import OTPinput from "../components/OTPFied";
 import { useNavigation } from '@react-navigation/native';
@@ -8,15 +8,38 @@ import { Card } from "react-native-elements";
 import Button from "../components/Button";
 import { Image } from "react-native-elements";
 import ChangePasswordModal from "../components/changePassword";
-const OTP=({navigation})=>{
+import axios from 'axios';
+const OTP=({route,navigation})=>{
+  const {email}=route.params;
   const [code,setCode]=useState("");
   const [PinReady,setPinReady]=useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const MAX_CODE_LENGTH=4;
   const handleSubmit = () => {
     if (code.length === MAX_CODE_LENGTH) {
-      // Simulate OTP verification success
-      setIsModalVisible(true); // Open Change Password Modal
+      const data={
+        email:email,
+        otp:code
+      }
+      axios.post("http://192.168.219.90:5001/verifyOtp",data).then(res=>{
+        console.log(res.message);
+      if(res.status==201){
+        setIsModalVisible(true);
+      }
+    }).catch((err)=>{
+      const status=err.response.status;
+      if(status==400){
+        Alert.alert('Invalid OTP','please Enter the Valid OTP');
+      }
+      if(status==401){
+        Alert.alert('Expired OTP','OTP that you entered is expired');
+      }
+      if(status==500){
+        Alert.alert('Error','Sorry ,Internal Server please try after some time');
+      }
+    });
+    
+       // Open Change Password Modal
     } else {
       alert("Please enter the full OTP code.");
     }
@@ -71,6 +94,7 @@ const OTP=({navigation})=>{
     <ChangePasswordModal
         modalVisible={isModalVisible}
         setModalVisible={setIsModalVisible}
+        email={email}
       />
     </SafeAreaView>
     
