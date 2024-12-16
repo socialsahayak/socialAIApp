@@ -21,7 +21,7 @@ const Signin = ({navigation}) => {
       email:email,
       password:Password
     }
-    axios.post("http://192.168.141.90:5001/login-user",userData).then(res=>{console.log(res.data);
+    axios.post("http://192.168.219.90:5001/login-user",userData).then(res=>{console.log(res.data);
       if(res.data.status=="ok"){
         Alert.alert('Logged In successfull');
         navigation.navigate('ChatBot');

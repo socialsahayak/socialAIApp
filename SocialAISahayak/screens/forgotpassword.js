@@ -9,6 +9,31 @@ import { Image } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 const ForgotPassword = ({navigation}) => {
+  const [email,setEmail]=useState('');
+  function handleSubmit(){
+    if(email.length==0){
+      Alert.alert("Enter the Email");
+      return;
+    }
+    const data={
+      email:email,
+    }
+    axios.post("http://192.168.219.90:5001/otp",data).then((res)=>{
+      console.log(res.data.message);
+      
+        Alert.alert("OTP send successfully");
+        navigation.navigate('otpforfp',{email});
+      }
+    ).catch((err)=>{
+      const status=err.response.status;
+      if(status==400){
+        Alert.alert('Account not yet created using this email');
+      }else if (status==500) {
+        Alert.alert("Failed to send OTP.Please try again");
+      }
+    })
+
+  }
   return (
     <SafeAreaView style={{flex:1,backgroundColor:Colors.white}}>
       <View style={{flex:1,marginHorizontal:30}}>
@@ -78,7 +103,7 @@ const ForgotPassword = ({navigation}) => {
           marginTop:18,
           marginBottom:4,
         }}
-        onPress={()=>{navigation.navigate("otpforfp")}}
+        onPress={handleSubmit}
         />
         
         <View style={{

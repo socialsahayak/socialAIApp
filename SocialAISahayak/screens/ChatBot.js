@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import {ActivityIndicator, View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -8,6 +7,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 function ChatScreen({ toggleTheme, isDarkTheme, addMessageToHistory, currentChat }) {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState(currentChat.messages);
+  const [isSending, setIsSending] = useState(false);
+  const [isBotTyping, setIsBotTyping] = useState(false);
   const flatListRef = useRef();
 
   const handleSend = async () => {
@@ -16,28 +17,45 @@ function ChatScreen({ toggleTheme, isDarkTheme, addMessageToHistory, currentChat
       setMessages((prevMessages) => [...prevMessages, userMessage]);
       addMessageToHistory(userMessage); // Update history in the parent component
       setMessage(''); // Clear the input field after sending
+      setIsSending(true);
+      setIsBotTyping(true);
 
       try {
-        const response = await axios.post('http://your-backend-url/api/chatbot', { message });
-        const botReply = { type: 'bot', text: response.data.reply };
+        const response = await axios.post('http://192.168.219.90:5001/process_question', { question:message});
+        const botResponseLines = response.data.answer.split("\n"); // Split response into lines
+      for (let i = 0; i < botResponseLines.length; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay for each line
+        const botReply = { type: 'bot', text: botResponseLines[i] };
         setMessages((prevMessages) => [...prevMessages, botReply]);
-        addMessageToHistory(botReply); // Update history in the parent component
+        addMessageToHistory(botReply);
+      }
+      setIsBotTyping(false); // Update history in the parent component
       } catch (error) {
         console.error('Error fetching response:', error);
         const errorMessage = { type: 'bot', text: 'Something went wrong. Please try again later.' };
         setMessages((prevMessages) => [...prevMessages, errorMessage]);
         addMessageToHistory(errorMessage); // Update history in the parent component
+        setIsBotTyping(false);
+      }finally{
+        setIsSending(false);
       }
     }
   };
 
   useEffect(() => {
     flatListRef.current?.scrollToEnd({ animated: true });
-  }, [messages]);
+  }, [messages,isBotTyping]);
 
-  const renderMessage = ({ item }) => (
-    <View style={[styles.messageBubble, item.type === 'user' ? styles.userMessage : styles.botMessage]}>
-      <Text style={styles.messageText}>{item.text}</Text>
+  const renderMessage = ({ item, index }) => (
+    <View>
+      <View style={[styles.messageBubble, item.type === 'user' ? styles.userMessage : styles.botMessage]}>
+        <Text style={styles.messageText}>{item.text}</Text>
+      </View>
+      {isBotTyping && index === messages.length - 1 && item.type === 'user' && (
+        <View style={[styles.messageBubble, styles.botMessage]}>
+          <Text style={styles.messageText}>Fetching data...</Text>
+        </View>
+      )}
     </View>
   );
 
@@ -62,10 +80,12 @@ function ChatScreen({ toggleTheme, isDarkTheme, addMessageToHistory, currentChat
               style={[styles.input, { backgroundColor: isDarkTheme ? '#1a1a1a' : '#f9f9f9', color: isDarkTheme ? '#fff' : '#000' }]}
               value={message}
               onChangeText={setMessage}
+
               placeholder="Type a message..."
+              editable={!isSending}
               placeholderTextColor={isDarkTheme ? '#888' : '#555'}
             />
-            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <TouchableOpacity style={styles.sendButton} onPress={handleSend} disabled={isSending|| !message.trim()}>
               <Text style={styles.sendButtonText}>Send</Text>
             </TouchableOpacity>
           </View>
