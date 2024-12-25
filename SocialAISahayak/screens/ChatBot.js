@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {ActivityIndicator, View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import {ActivityIndicator, View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard ,Alert} from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -21,20 +21,20 @@ function ChatScreen({ toggleTheme, isDarkTheme, addMessageToHistory, currentChat
       setIsBotTyping(true);
 
       try {
-        const response = await axios.post('http://192.168.219.90:5001/process_question', { question:message});
-        const botResponseLines = response.data.answer.split("\n"); // Split response into lines
+        const response = await axios.post('http://192.168.51.90:5001/process_question', { question:message});
+        const botResponseLines = response.data.answer.split("\n");
       for (let i = 0; i < botResponseLines.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay for each line
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         const botReply = { type: 'bot', text: botResponseLines[i] };
         setMessages((prevMessages) => [...prevMessages, botReply]);
         addMessageToHistory(botReply);
       }
-      setIsBotTyping(false); // Update history in the parent component
+      setIsBotTyping(false);
       } catch (error) {
         console.error('Error fetching response:', error);
         const errorMessage = { type: 'bot', text: 'Something went wrong. Please try again later.' };
         setMessages((prevMessages) => [...prevMessages, errorMessage]);
-        addMessageToHistory(errorMessage); // Update history in the parent component
+        addMessageToHistory(errorMessage); 
         setIsBotTyping(false);
       }finally{
         setIsSending(false);
@@ -97,6 +97,24 @@ function ChatScreen({ toggleTheme, isDarkTheme, addMessageToHistory, currentChat
 
 function CustomDrawerContent(props) {
   const { isDarkTheme, conversations, setCurrentChat, createNewChat } = props;
+  const deleteConversation = (index) => {
+    Alert.alert(
+      'Delete Conversation',
+      'Are you sure you want to delete this conversation?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            const updatedConversations = conversations.filter((_, i) => i !== index);
+            // setConversations(updatedConversations);
+          },
+        },
+      ]
+    );
+  };
+
 
   return (
     <DrawerContentScrollView {...props} style={[styles.drawerContent, { backgroundColor: isDarkTheme ? '#1a1a1a' : '#fff' }]}>
@@ -107,7 +125,7 @@ function CustomDrawerContent(props) {
       <FlatList
         data={conversations}
         renderItem={({ item, index }) => (
-          <TouchableOpacity onPress={() => setCurrentChat(item)}>
+          <TouchableOpacity onPress={() => setCurrentChat(item)} onLongPress={() => deleteConversation(index)}>
             <View style={styles.historyItem}>
               <Text style={{ color: isDarkTheme ? '#fff' : '#000' }}>Conversation {index + 1}</Text>
             </View>
@@ -144,13 +162,13 @@ export default function ChatBot() {
   };
 
   return (
-    // <NavigationContainer>
       <Drawer.Navigator
         drawerContent={(props) => (
           <CustomDrawerContent
             {...props}
             conversations={conversations}
             setCurrentChat={setCurrentChat}
+            setConversations={setConversations}
             createNewChat={createNewChat}
             isDarkTheme={isDarkTheme}
           />
@@ -173,10 +191,9 @@ export default function ChatBot() {
         }}
       >
         <Drawer.Screen name="Bot">
-          {() => <ChatScreen toggleTheme={toggleTheme} isDarkTheme={isDarkTheme} addMessageToHistory={addMessageToHistory} currentChat={currentChat} />}
+          {() => <ChatScreen key={currentChat} toggleTheme={toggleTheme} isDarkTheme={isDarkTheme} addMessageToHistory={addMessageToHistory} currentChat={currentChat} />}
         </Drawer.Screen>
       </Drawer.Navigator>
-    // </NavigationContainer>
   );
 }
 

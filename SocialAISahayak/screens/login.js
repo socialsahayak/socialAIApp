@@ -15,24 +15,35 @@ const Signin = ({navigation}) => {
   const [Password,setPassword]=useState('');
   const [isPasswordShown,setIsPasswordShown]=useState(false);
   const [isChecked,setIsChecked]=useState(false);
-  function handleSubmit(){
-    console.log(email,Password);
-    const userData={
+  async function handleSubmit(){
+    const userData={ 
       email:email,
       password:Password
     }
-    axios.post("http://192.168.219.90:5001/login-user",userData).then(res=>{console.log(res.data);
-      if(res.data.status=="ok"){
-        Alert.alert('Logged In successfull');
+    try{
+    // const res= await axios.post("http://192.168.51.90:5001/login-user",userData);
+    // console.log(res.data);
+    //     Alert.alert('Logged In successfull');
         navigation.navigate('ChatBot');
-      }else{
-        Alert.alert('Invalid User');
-      }
-    });
+   
+  }
+  catch(err){
+    const status=err.response.status;
+    console.log(status);
+          if(status==401){
+            Alert.alert("Password is Incorrect");
+          }
+          else if(status==400){
+            Alert.alert("It seems Email doesn't exist");
+          }else if(status==500){
+      Alert.alert("Internal server Error")
+          }
+          
+    };
 
   }
   return (
-    <SafeAreaView style={{flex:1,backgroundColor:Colors.white}}>
+    <SafeAreaView style={{flex:1,backgroundColor:Colors.white}} keyboardShouldPersistTaps={"always"}>
       <View style={{flex:1,marginHorizontal:22}}>
         <View style={{marginVertical:22}}>
         <Text style={{

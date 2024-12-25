@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Pressable, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Pressable, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Checkbox from 'expo-checkbox';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,13 +46,23 @@ const Signup = ({ navigation }) => {
     const userData = { name, email, password };
 
     try {
-      const res = await axios.post("http://192.168.219.90:5001/register", userData);
+      const res = await axios.post("http://192.168.51.90:5001/register", userData);
       console.log(res.data);
       alert("Account created successfully!");
       navigation.navigate("login");
     } catch (error) {
-      console.error("Error during registration: ", error);
-      alert("Failed to create an account. Please try again.");
+      const status=error.response.status;
+      if(status==400){
+        Alert.alert("It seems Email doesn't exist");
+      }
+      else if(status==401){
+        Alert.alert("It seems User already exist with this email");
+      }
+      else if(status==500){
+        Alert.alert("Internal Sever Error Please Try again");
+      }else{
+      Alert.alert("Failed to create an account. Please try again.");
+      }
     }
   };
 

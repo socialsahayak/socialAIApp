@@ -18,7 +18,7 @@ const ForgotPassword = ({navigation}) => {
     const data={
       email:email,
     }
-    axios.post("http://192.168.219.90:5001/otp",data).then((res)=>{
+    axios.post("http://192.168.51.90:5001/otp",data).then((res)=>{
       console.log(res.data.message);
       
         Alert.alert("OTP send successfully");

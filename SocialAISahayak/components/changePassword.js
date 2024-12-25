@@ -34,7 +34,7 @@ const ChangePasswordModal = ({ modalVisible, setModalVisible,email }) => {
       email:email,
       password:newPassword,
     };
-    axios.put("http://192.168.219.90:5001/changePassword",data).then((res)=>{
+    axios.put("http://192.168.51.90:5001/changePassword",data).then((res)=>{
       console.log(res.data.message);
       
       Alert.alert("Success", "Password changed successfully.");

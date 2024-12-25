@@ -21,7 +21,7 @@ const OTP=({route,navigation})=>{
         email:email,
         otp:code
       }
-      axios.post("http://192.168.219.90:5001/verifyOtp",data).then(res=>{
+      axios.post("http://192.168.51.90:5001/verifyOtp",data).then(res=>{
         console.log(res.message);
       if(res.status==201){
         setIsModalVisible(true);
