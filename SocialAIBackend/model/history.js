@@ -24,6 +24,12 @@ const historySchema=new schema({
         type:String,
         required:true
     },
+
+  session_id: {
+    type: String,
+    required: true,
+    default: () => new mongoose.Types.ObjectId(), // Unique session ID
+  },
     chat_date: {
         type: String,
         required: true,

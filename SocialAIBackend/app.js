@@ -11,9 +11,8 @@ const axios=require("axios");
 const mongoUrl="mongodb+srv://shivaram:ram%401730@cluster0.pafie.mongodb.net/?retryWrites=true&w=majority&appName=Cluster00";
 const bcrypt=require("bcryptjs")
 const jwt=require("jsonwebtoken");
-// const { sendMail, main } = require("./helpers/sendMail");
 const JWT_secret="jkfjdfjikjijo[]kajfiojioj1234jdfdfjji";
-
+const ChatHistory=require("./model/history");
 
 mongoose.connect(mongoUrl).then(()=>{
     console.log("database connected");
@@ -43,44 +42,51 @@ app.post("/register",async(req,res)=>{
     const {name,email,password}=req.body;
     const oldUser=await user.findOne({email:email});
     if(oldUser){
-        return res.send({data:"user already exists"});
+        return res.status(401).send({data:"user already exists"});
     }
     const encryptedPass=await bcrypt.hash(password,10);
+   
     const emailResponse= await sendMail(email,"Welcome to Our App",`Hi ,${name} Thank you for registering ! Now you can explore our app`);
-    if(!emailResponse.success){
+    console.log(emailResponse);
+    if(emailResponse.success==="false"){
         console.log("failed to send email");
-        return res.status(500).send({status:"error",data:"It seems email doesn't exist"});
+        return res.status(400).send({status:"error",data:"It seems email doesn't exist"});
     }
     try{
-    await user.create({
+    const newUser=await user.create({
         id:uuidv4(),
         name:name,
         email:email,
         password:encryptedPass
     });
-    res.send({status:"ok",data:"user created"});
+    const token = jwt.sign({ email: newUser.email }, JWT_secret, { expiresIn: "1h" });
+    res.send({status:"ok",token,data:"user created"});
     }catch(error){
-        res.send({status:"error",data:error});
+        res.status(500).send({status:"error",data:error});
     }
     
 });
 
 
 app.post("/login-user",async(req,res)=>{
+        try{
         const {email,password}=req.body;
         const oldUser=await user.findOne({email:email});
         if(!oldUser){
-            return res.send({data:"user doesn't exist"});
+            return res.status(400).send({data:"user doesn't exist"});
 
         }
         if(await bcrypt.compare(password,oldUser.password)){
-            const token=jwt.sign({email:oldUser.email},JWT_secret);
-            if(res.status(201)){
-                return res.send({status:'ok',data:token});
-            }else{
-                return res.send({error:"error"});
-            }
-        }   
+            const token=jwt.sign({email:oldUser.email},JWT_secret,{ expiresIn: "1h" });
+                return res.status(201).send({data:token});
+                
+        }else{
+            return res.status(401).send("Password is Incorrect");
+        }
+     } catch(err){
+            return res.status(500).send({error:"error"});
+            
+        }
 })
 
 
@@ -165,22 +171,131 @@ app.put("/changePassword",async(req,res)=>{
 
 
 // model
-app.post('/process_question', async (req, res) => {
-    const question = req.body.question;
-    console.log(question);
+app.post('/process_question/:email', async (req, res) => {
+  const { email } = req.params;
+  console.log(email);
 
-    try {
-        const response = await axios.post('https://b029-34-34-94-196.ngrok-free.app/process_question', {
-            question: question
-        });
-        res.json({
-            answer: response.data.answer
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error processing question' });
-    }
+  try {
+      // Fetch user ID based on email
+      const userRecord = await user.findOne({ email: email }, { _id: 1 });
+      if (!userRecord) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+      const user_id = userRecord._id;
+
+      const { question, session_id } = req.body;
+      console.log(question, session_id);
+
+      // Send the question to the external API
+      const response = await axios.post('https://e184-34-87-158-196.ngrok-free.app/process_question', {
+          question: question
+      });
+      const botAnswer = response.data.answer;
+
+      let chatHistory;
+
+      // Check if session_id is provided
+      if (!session_id) {
+          // Create a new chat history if no session_id
+          chatHistory = new ChatHistory({
+              id: user_id,  // Use user ID here
+              messages: [],
+          });
+      } else {
+          // Find existing chat history by session_id
+          chatHistory = await ChatHistory.findOne({ session_id }).sort({ _id: -1 });
+      }
+
+      // If no chat history exists, create a new one
+      if (!chatHistory) {
+          chatHistory = new ChatHistory({
+              id: user_id,  // Ensure 'id' field is set correctly
+              messages: [],
+              session_id: session_id  // Store session ID for tracking
+          });
+      }
+
+      // Add user and bot messages to the chat history
+      chatHistory.messages.push({ sender: 'user', message: question });
+      chatHistory.messages.push({ sender: 'bot', message: botAnswer });
+
+      // Save the updated chat history
+      await chatHistory.save();
+
+      // Respond with the bot's answer and the session ID
+      res.json({
+          answer: botAnswer,
+          session_id: chatHistory.session_id || session_id,  // Return correct session ID for client tracking
+      });
+  } catch (error) {
+      console.error('Error processing question:', error);
+      res.status(500).json({ message: 'Error processing question' });
+  }
 });
 
 
+app.get("/user-details", async (req, res) => {
+    console.log("hi");
+    const token = req.headers.authorization?.split(" ")[1]; // Extract token from header
+  
+    if (!token) {
+      return res.status(401).send({ status: "error", data: "No token provided" });
+    }
+  
+    try {
+      // Verify the token
+      const decoded = jwt.verify(token, JWT_secret);
+  
+      // Find the user using the decoded email
+      const userDetails = await user.findOne({ email: decoded.email });
+      if (!userDetails) {
+        return res.status(404).send({ status: "error", data: "User not found" });
+      }
+  
+      // Send the user's details in the response
+      res.send({
+        status: "ok",
+        data: {
+          name: userDetails.name,
+          email: userDetails.email,
+        },
+      });
+    } catch (error) {
+      console.error("Token verification error:", error);
+      res.status(401).send({ status: "error", data: "Invalid token" });
+    }
+  });
 
+
+app.get('/user/conversations/:email', async (req, res) => {
+    try {
+      const {email}=req.params;
+      console.log(email);
+      let user_id=await user.findOne({email:email},{_id:1});
+      if (!user_id) {
+        console.error('No user found with email:', email);
+        return res.status(404).json({ error: 'No user found with the provided email' });
+      }
+  
+      const conversations = await ChatHistory.find({id:user_id._id}).sort({ date: -1 });; 
+      res.status(200).json(conversations); // Send the data as a JSON response
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      res.status(500).json({ error: 'Unable to load conversations. Please try again later.' });
+    }
+  });
+
+  app.get('/conversations/session/:id', async (req, res) => {
+    try {
+     console.log(req.params);
+      const conversations = await ChatHistory.find({session_id:req.params.id}); 
+      if (!conversations || conversations.length === 0) {
+        console.log('No conversations found for session:', sessionId);
+        return res.status(404).json({ error: 'No conversations found' });
+    }
+      res.status(200).json(conversations); // Send the data as a JSON response
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      res.status(500).json({ error: 'Unable to load conversations. Please try again later.' });
+    }
+  });
