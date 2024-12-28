@@ -5,25 +5,37 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import {Ionicons} from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import Button from '../components/Button';
+import { useUser } from '../context/UserContext'; // Import the custom hook
 import { Image } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 
 const Signin = ({navigation}) => {
+
+  const { login } = useUser();
   
   const [email,setEmail]=useState('');
   const [Password,setPassword]=useState('');
   const [isPasswordShown,setIsPasswordShown]=useState(false);
   const [isChecked,setIsChecked]=useState(false);
   async function handleSubmit(){
+    if(email.length==0){
+      return Alert.alert("Please Enter the Email");
+    }
+    if(Password.length==0){
+      return Alert.alert("Please Enter the Password");
+    }
     const userData={ 
       email:email,
       password:Password
     }
     try{
-    // const res= await axios.post("http://192.168.51.90:5001/login-user",userData);
-    // console.log(res.data);
-    //     Alert.alert('Logged In successfull');
+    const res= await axios.post("http://192.168.51.90:5001/login-user",userData);
+    console.log(res.data);
+        Alert.alert('Logged In successfull');
+        const token = res.data.token;
+        const user = { email };
+        login(user, token);
         navigation.navigate('ChatBot');
    
   }

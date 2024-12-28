@@ -10,8 +10,11 @@ import Otpverifiy from './screens/otpverification';
 import  ChatBot  from './screens/ChatBot';
 import { ForgotPassword } from './screens';
 import OTP from './screens/otpforfp';
+import UserSettings from './screens/UserSettings';
+import { UserProvider } from './context/UserContext';
 export default function App() {
   return (
+    <UserProvider>
     <NavigationContainer>
       <Stack.Navigator initialRouteName='welcome'>
       <Stack.Screen name='welcome'
@@ -60,8 +63,18 @@ export default function App() {
       component={OTP}
       options={{ headerShown: false }}
       />
+       <Stack.Screen
+            name="UserSettings"
+            component={UserSettings}
+            options={{
+              title: "Settings",
+              headerStyle: { backgroundColor: "#1a1a1a" },
+              headerTintColor: "#fff",
+            }}
+          />
       </Stack.Navigator>
     </NavigationContainer>
+    </UserProvider>
   );
 }
 

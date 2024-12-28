@@ -5,7 +5,7 @@ import Checkbox from 'expo-checkbox';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../components/Button';
 import axios from 'axios';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Colors = {
   primary: "#6200EE",
   black: "#000000",
@@ -48,6 +48,7 @@ const Signup = ({ navigation }) => {
     try {
       const res = await axios.post("http://192.168.51.90:5001/register", userData);
       console.log(res.data);
+      await AsyncStorage.setItem('jwt_token', res.data.token);
       alert("Account created successfully!");
       navigation.navigate("login");
     } catch (error) {
